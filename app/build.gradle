@@ -1,0 +1,58 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "27.0.2"
+    defaultConfig {
+        applicationId "com.lifeng.mypolyv"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        //64K 引用限制
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            shrinkResources true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    //64K 引用限制
+    compile files('libs/libs/alicloud-android-sdk-httpdns-1.1.0.jar')
+    compile files('libs/libs/alicloud-android-utils-1.0.2.jar')
+    compile files('libs/libs/bugly_crash_release.jar')
+    compile files('libs/libs/converter-gson-2.1.0.jar')
+    compile files('libs/libs/danmaku-flame-master-0.6.2.jar')
+    compile files('libs/libs/ijkplayer-exo-0.8.0.1.jar')
+    compile files('libs/libs/gson-2.7.jar')
+    compile files('libs/libs/ijkplayer-java-0.8.0.1.jar')
+    compile files('libs/libs/okhttp-3.3.0.jar')
+    compile files('libs/libs/okio-1.8.0.jar')
+    compile files('libs/libs/org.apache.http.legacy.jar')
+    compile files('libs/libs/polyvDownload2.0.6.jar')
+    compile files('libs/libs/polyvPlayer2.0.6.jar')
+    compile files('libs/libs/polyvSub2.0.6.jar')
+    compile files('libs/libs/polyvUpload2.0.6.jar')
+    compile files('libs/libs/polyvWidget0.5.1.7.jar')
+    compile files('libs/libs/retrofit-2.1.0.jar')
+    compile files('libs/libs/universal-image-loader-1.9.5.jar')
+    compile files('libs/libs/utdid4all-1.1.5.3_proguard.jar')
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:support-annotations:23.4.0'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:multidex:1.0.1'
+    testCompile 'junit:junit:4.12'
+}
