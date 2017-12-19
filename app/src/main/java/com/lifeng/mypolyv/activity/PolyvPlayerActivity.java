@@ -49,12 +49,12 @@ public class PolyvPlayerActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_polyv_player);
         findIdAndNew();
-        initView();
+        initVideoView();
 
-        int playModeCode = getIntent().getIntExtra("playMode", PlayMode.portrait.getCode());
-        PlayMode playMode = PlayMode.getPlayMode(playModeCode);
+        int playModeCode = getIntent().getIntExtra("playMode", PolyvPlayerMediaController.PlayMode.portrait.getCode());
+        PolyvPlayerMediaController.PlayMode playMode = PolyvPlayerMediaController.PlayMode.getPlayMode(playModeCode);
         if (playMode == null)
-            playMode = PlayMode.portrait;
+            playMode = PolyvPlayerMediaController.PlayMode.portrait;
         String vid = "7ac375c1ed34d573a17dc80127835261_7";
 //        int bitrate = getIntent().getIntExtra("bitrate", PolyvBitRate.ziDong.getNum());
 //        boolean startNow = getIntent().getBooleanExtra("startNow", false);
@@ -84,7 +84,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
         videoView.setPlayerBufferingIndicator(mediaController.loadingProgress);
     }
 
-    private void initView() {
+    private void initVideoView() {
         videoView.setOpenAd(true);
         videoView.setOpenTeaser(true);
         videoView.setOpenQuestion(true);
@@ -247,13 +247,6 @@ public class PolyvPlayerActivity extends FragmentActivity {
         videoView.setVid(vid);
     }
 
-    private void clearGestureInfo() {
-        videoView.clearGestureInfo();
-        mediaController.progressView.hide();
-        mediaController.volumeView.hide();
-        mediaController.lightView.hide();
-    }
-
 
     @Override
     protected void onResume() {
@@ -268,7 +261,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        clearGestureInfo();
+        mediaController.clearGestureInfo();
         mediaController.pause();
     }
 
@@ -299,45 +292,4 @@ public class PolyvPlayerActivity extends FragmentActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * 播放模式
-     *
-     * @author TanQu
-     */
-    public enum PlayMode {
-        /**
-         * 横屏
-         */
-        landScape(3),
-        /**
-         * 竖屏
-         */
-        portrait(4);
-
-        private final int code;
-
-        private PlayMode(int code) {
-            this.code = code;
-        }
-
-        /**
-         * 取得类型对应的code
-         *
-         * @return
-         */
-        public int getCode() {
-            return code;
-        }
-
-        public static PlayMode getPlayMode(int code) {
-            switch (code) {
-                case 3:
-                    return landScape;
-                case 4:
-                    return portrait;
-            }
-
-            return null;
-        }
-    }
 }

@@ -33,13 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
 
-//    /**
-//     * 播放主视频播放器
-//     */
-//    public PolyvVideoView pvideoView = null;
     /**
      * 手势出现的亮度界面
      */
@@ -313,8 +308,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         sensorHelper = new PolyvSensorHelper(videoActivity);
 
     }
-
-
 
 
     public void initView() {
@@ -651,6 +644,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                 break;
         }
     }
+
     //重置选择字幕的控件
     private void resetSrtView(int srtPosition) {
         if (videoView != null)
@@ -990,6 +984,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         if (!status_showalways)
             resetHideTime(longTime);
     }
+
     /**
      * 播放模式
      *
@@ -1030,5 +1025,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
             return null;
         }
+    }
+
+    public void clearGestureInfo() {
+        videoView.clearGestureInfo();
+        progressView.hide();
+        volumeView.hide();
+        lightView.hide();
     }
 }
