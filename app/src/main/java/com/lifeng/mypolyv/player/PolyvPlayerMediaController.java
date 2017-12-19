@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ import com.easefun.polyvsdk.ijk.PolyvPlayerScreenRatio;
 import com.easefun.polyvsdk.video.IPolyvVideoView;
 import com.easefun.polyvsdk.video.PolyvBaseMediaController;
 import com.easefun.polyvsdk.video.PolyvVideoView;
+import com.easefun.polyvsdk.video.auxiliary.PolyvAuxiliaryVideoView;
 import com.easefun.polyvsdk.vo.PolyvVideoVO;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.utils.PolyvScreenUtils;
@@ -33,6 +35,35 @@ import java.util.List;
 
 
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
+
+//    /**
+//     * 播放主视频播放器
+//     */
+//    public PolyvVideoView pvideoView = null;
+    /**
+     * 手势出现的亮度界面
+     */
+    public PolyvPlayerLightView lightView = null;
+
+    /**
+     * 手势出现的音量界面
+     */
+    public PolyvPlayerVolumeView volumeView = null;
+
+    /**
+     * 视频加载缓冲视图
+     */
+    public ProgressBar loadingProgress = null;
+
+    /**
+     * 手势出现的进度界面
+     */
+    public PolyvPlayerProgressView progressView = null;
+
+    /**
+     * 用于播放广告,片头的播放器
+     */
+    public PolyvAuxiliaryVideoView auxiliaryVideoView = null;
 
 
     //打印Log日志的方法
@@ -218,6 +249,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
 
     private void findIdAndNew() {
+        lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
+        volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
+        progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
+        loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
+        auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
+
         //竖屏的view
         rl_port = (RelativeLayout) view.findViewById(R.id.rl_port);
         iv_land = (ImageView) view.findViewById(R.id.iv_land);
@@ -277,7 +314,10 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
     }
 
-    private void initView() {
+
+
+
+    public void initView() {
         iv_land.setOnClickListener(this);
         iv_port.setOnClickListener(this);
         iv_play.setOnClickListener(this);
@@ -949,5 +989,46 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         //如果控制栏不是处于一直显示的状态，那么重置控制栏隐藏的时间
         if (!status_showalways)
             resetHideTime(longTime);
+    }
+    /**
+     * 播放模式
+     *
+     * @author TanQu
+     */
+    public enum PlayMode {
+        /**
+         * 横屏
+         */
+        landScape(3),
+        /**
+         * 竖屏
+         */
+        portrait(4);
+
+        private final int code;
+
+        private PlayMode(int code) {
+            this.code = code;
+        }
+
+        /**
+         * 取得类型对应的code
+         *
+         * @return
+         */
+        public int getCode() {
+            return code;
+        }
+
+        public static PlayMode getPlayMode(int code) {
+            switch (code) {
+                case 3:
+                    return landScape;
+                case 4:
+                    return portrait;
+            }
+
+            return null;
+        }
     }
 }
