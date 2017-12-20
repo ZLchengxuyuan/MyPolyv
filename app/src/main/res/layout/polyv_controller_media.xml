@@ -3,7 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
+    <com.easefun.polyvsdk.video.PolyvVideoView
+        android:id="@+id/polyv_video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <!-- logo -->
     <ImageView
