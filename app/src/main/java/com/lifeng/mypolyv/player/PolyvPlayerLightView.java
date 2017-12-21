@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.lifeng.mypolyv.R;
 
+
 public class PolyvPlayerLightView extends FrameLayout {
     //lightView
     private View view;

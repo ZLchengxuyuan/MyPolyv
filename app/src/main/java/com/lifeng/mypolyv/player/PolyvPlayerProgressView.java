@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.utils.PolyvTimeUtils;
 
+
 public class PolyvPlayerProgressView extends FrameLayout {
     //progressView
     private View view;

@@ -7,31 +7,19 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.easefun.polyvsdk.ijk.PolyvPlayerScreenRatio;
 import com.easefun.polyvsdk.video.IPolyvVideoView;
 import com.easefun.polyvsdk.video.PolyvBaseMediaController;
 import com.easefun.polyvsdk.video.PolyvVideoView;
-import com.easefun.polyvsdk.video.auxiliary.PolyvAuxiliaryVideoView;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureClickListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftDownListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftUpListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureRightDownListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureRightUpListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeLeftListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeRightListener;
-import com.easefun.polyvsdk.video.listener.IPolyvOnPreparedListener2;
 import com.easefun.polyvsdk.vo.PolyvVideoVO;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.utils.PolyvScreenUtils;
@@ -41,37 +29,9 @@ import com.lifeng.mypolyv.utils.PolyvTimeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
 
-    /**
-     * 手势出现的亮度界面
-     */
-    public PolyvPlayerLightView lightView = null;
-
-    /**
-     * 手势出现的音量界面
-     */
-    public PolyvPlayerVolumeView volumeView = null;
-
-    /**
-     * 视频加载缓冲视图
-     */
-    public ProgressBar loadingProgress = null;
-
-    /**
-     * 手势出现的进度界面
-     */
-    public PolyvPlayerProgressView progressView = null;
-
-    /**
-     * 用于播放广告,片头的播放器
-     */
-    public PolyvAuxiliaryVideoView auxiliaryVideoView = null;
-
-
-    //打印Log日志的方法
-     private static final String TAG = PolyvPlayerMediaController.class.getSimpleName();
+    private static final String TAG = PolyvPlayerMediaController.class.getSimpleName();
     private Context mContext = null;
     private PolyvVideoView videoView = null;
     private PolyvVideoVO videoVO;
@@ -104,7 +64,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     //横屏的控制栏，顶部布局，底部布局
     private RelativeLayout rl_land, rl_top, rl_bot;
     //横屏的切屏按钮，横屏的播放/暂停按钮,横屏的返回按钮，设置按钮，分享按钮，弹幕开关
-    private ImageView iv_port, iv_play_land, iv_finish;
+    private ImageView iv_port, iv_play_land, iv_finish, iv_dmswitch;
     // 横屏的显示播放进度控件,视频的标题,选择播放速度按钮，选择码率按钮
     private TextView tv_curtime_land, tv_tottime_land, tv_title, tv_speed, tv_bit;
     // 横屏的进度条
@@ -114,6 +74,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
      */
     //侧边布局
     private LinearLayout ll_side;
+
     /**
      * 设置布局的view
      */
@@ -148,6 +109,8 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     private boolean status_dragging;
     // 控制栏是否处于一直显示的状态
     private boolean status_showalways;
+    // 播放器在显示弹幕布局前的状态
+    private boolean status_isPlaying;
     private PolyvSensorHelper sensorHelper;
 
     //用于处理控制栏的显示状态
@@ -164,13 +127,8 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
             }
         }
     };
-    //设置点击图片进度条后退10秒
     private ImageView iv_houtui;
     private int position;
-    //列表内容
-    private ImageView iv_liebiao;
-    public PolyvVideoView pvideoView;
-    private int fastForwardPos = 0;
 
     // 更新显示的播放进度，以及暂停/播放按钮
     private void showProgress() {
@@ -193,14 +151,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                     sb_play_land.setProgress(0);
                 }
             }
-
-
             sb_play.setSecondaryProgress(1000 * bufPercent / 100);
             sb_play_land.setSecondaryProgress(1000 * bufPercent / 100);
             if (videoView.isPlaying()) {
                 iv_play.setSelected(false);
                 iv_play_land.setSelected(false);
-            } else if (!videoView.isPlaying()) {
+            } else {
                 iv_play.setSelected(true);
                 iv_play_land.setSelected(true);
             }
@@ -217,17 +173,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                             videoView.start();
                         }
 
-                    } else if (totalTime > 0 && totalTime < 10) {
-                        videoView.start();
                     }
                 }
             });
-
-
             handler.sendMessageDelayed(handler.obtainMessage(SHOW_PROGRESS), 1000 - (position % 1000));
         }
     }
-
 
     public PolyvPlayerMediaController(Context context) {
         this(context, null);
@@ -246,6 +197,8 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         initView();
     }
 
+
+
     /**
      * 初始化控制栏的配置
      *
@@ -257,16 +210,13 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
 
     private void findIdAndNew() {
-        lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
-        volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
-        progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
-        loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
-        auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
-        pvideoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
 
+        iv_houtui = (ImageView) findViewById(R.id.iv_houtui);
         //竖屏的view
         rl_port = (RelativeLayout) view.findViewById(R.id.rl_port);
         iv_land = (ImageView) view.findViewById(R.id.iv_land);
+
+
         iv_play = (ImageView) view.findViewById(R.id.iv_play);
         tv_curtime = (TextView) view.findViewById(R.id.tv_curtime);
         tv_tottime = (TextView) view.findViewById(R.id.tv_tottime);
@@ -278,16 +228,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         iv_port = (ImageView) view.findViewById(R.id.iv_port);
         iv_play_land = (ImageView) view.findViewById(R.id.iv_play_land);
         iv_finish = (ImageView) view.findViewById(R.id.iv_finish);
-        //图片点击事件，点击打开标题列表
-        iv_liebiao = (ImageView) findViewById(R.id.iv_liebiao);
         tv_curtime_land = (TextView) view.findViewById(R.id.tv_curtime_land);
         tv_tottime_land = (TextView) view.findViewById(R.id.tv_tottime_land);
         sb_play_land = (SeekBar) view.findViewById(R.id.sb_play_land);
         tv_title = (TextView) view.findViewById(R.id.tv_title);
         tv_speed = (TextView) view.findViewById(R.id.tv_speed);
         tv_bit = (TextView) view.findViewById(R.id.tv_bit);
-        //点击图片进度条后退10秒
-        iv_houtui = (ImageView) findViewById(R.id.iv_houtui);
         //设置布局的view
         rl_center_set = (RelativeLayout) view.findViewById(R.id.rl_center_set);
         sb_light = (SeekBar) view.findViewById(R.id.sb_light);
@@ -303,6 +249,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         iv_close_set = (ImageView) view.findViewById(R.id.iv_close_set);
         //侧边布局的view
         ll_side = (LinearLayout) view.findViewById(R.id.ll_side);
+
         //播放速度布局的view
         rl_center_speed = (RelativeLayout) view.findViewById(R.id.rl_center_speed);
         tv_speed05 = (TextView) view.findViewById(R.id.tv_speed05);
@@ -320,9 +267,24 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         iv_close_bit = (ImageView) view.findViewById(R.id.iv_close_bit);
 
         sensorHelper = new PolyvSensorHelper(videoActivity);
-
     }
 
+//    public void setViewLightValue(int i,boolean b) {
+//        lightView.setViewLightValue(i,b);
+//    }
+//    public void setLightHide(){
+//        lightView.hide();
+//    }
+//    public void setViewVolumeValue(int i,boolean b) {
+//        volumeView.setViewVolumeValue(i,b);
+//    }
+//    public void setVolumeHide(){
+//        volumeView.hide();
+//    }
+//
+//    public void setProgressViewHide(){
+//        progressView.hide();
+//    }
 
     public void initView() {
         iv_land.setOnClickListener(this);
@@ -331,7 +293,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         iv_play_land.setOnClickListener(this);
         iv_finish.setOnClickListener(this);
         //打开列表的点击事件
-        iv_liebiao.setOnClickListener(this);
+        //iv_liebiao.setOnClickListener(this);
         tv_full.setOnClickListener(this);
         tv_fit.setOnClickListener(this);
         tv_sixteennine.setOnClickListener(this);
@@ -361,170 +323,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         sb_light.setOnSeekBarChangeListener(seekBarChangeListener);
         sb_volume.setOnSeekBarChangeListener(seekBarChangeListener);
     }
-
-    /**
-     * 播放视频
-     *
-     * @param vid 视频id
-     *            //     * @param bitrate         码率（清晰度）
-     *            //     * @param startNow        是否现在开始播放视频
-     *            //     * @param isMustFromLocal 是否必须从本地（本地缓存的视频）播放
-     *            //
-     */
-    public void play(final String vid) {
-        if (TextUtils.isEmpty(vid)) return;
-        pvideoView.release();
-        hide();
-        loadingProgress.setVisibility(View.GONE);
-        auxiliaryVideoView.hide();
-        setVisibility(pvideoView.VISIBLE);
-        //调用setVid方法视频会自动播放
-        pvideoView.setVid(vid);
-    }
-    public void initVideoView() {
-        pvideoView.setOpenAd(true);
-        pvideoView.setOpenTeaser(true);
-        pvideoView.setOpenQuestion(true);
-        pvideoView.setOpenSRT(true);
-        pvideoView.setOpenPreload(true, 2);
-        pvideoView.setAutoContinue(true);
-        pvideoView.setNeedGestureDetector(true);
-
-        pvideoView.setOnPreparedListener(new IPolyvOnPreparedListener2() {
-            @Override
-            public void onPrepared() {
-                preparedView();
-            }
-        });
-
-        pvideoView.setOnGestureLeftUpListener(new IPolyvOnGestureLeftUpListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("LeftUp %b %b brightness %d", start, end, pvideoView.getBrightness(videoActivity)));
-                int brightness = pvideoView.getBrightness(videoActivity) + 5;
-                if (brightness > 100) {
-                    brightness = 100;
-                }
-
-                pvideoView.setBrightness(videoActivity, brightness);
-                lightView.setViewLightValue(brightness, end);
-            }
-        });
-
-        pvideoView.setOnGestureLeftDownListener(new IPolyvOnGestureLeftDownListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("LeftDown %b %b brightness %d", start, end, pvideoView.getBrightness(videoActivity)));
-                int brightness = pvideoView.getBrightness(videoActivity) - 5;
-                if (brightness < 0) {
-                    brightness = 0;
-                }
-
-                pvideoView.setBrightness(videoActivity, brightness);
-                lightView.setViewLightValue(brightness, end);
-            }
-        });
-
-        pvideoView.setOnGestureRightUpListener(new IPolyvOnGestureRightUpListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("RightUp %b %b volume %d", start, end, pvideoView.getVolume()));
-                // 加减单位最小为10，否则无效果
-                int volume = pvideoView.getVolume() + 10;
-                if (volume > 100) {
-                    volume = 100;
-                }
-
-                pvideoView.setVolume(volume);
-                volumeView.setViewVolumeValue(volume, end);
-            }
-        });
-
-        pvideoView.setOnGestureRightDownListener(new IPolyvOnGestureRightDownListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("RightDown %b %b volume %d", start, end, pvideoView.getVolume()));
-                // 加减单位最小为10，否则无效果
-                int volume = pvideoView.getVolume() - 10;
-                if (volume < 0) {
-                    volume = 0;
-                }
-
-                pvideoView.setVolume(volume);
-                volumeView.setViewVolumeValue(volume, end);
-            }
-        });
-
-        pvideoView.setOnGestureSwipeLeftListener(new IPolyvOnGestureSwipeLeftListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                // 左滑事件
-                Log.d(TAG, String.format("SwipeLeft %b %b", start, end));
-                if (fastForwardPos == 0) {
-                    fastForwardPos = pvideoView.getCurrentPosition();
-                }
-
-                if (end) {
-                    if (fastForwardPos < 0)
-                        fastForwardPos = 0;
-                    pvideoView.seekTo(fastForwardPos);
-                    if (pvideoView.isCompletedState()) {
-                        pvideoView.start();
-                    }
-                    fastForwardPos = 0;
-                } else {
-                    fastForwardPos -= 10000;
-                    if (fastForwardPos <= 0)
-                        fastForwardPos = -1;
-                }
-                progressView.setViewProgressValue(fastForwardPos, pvideoView.getDuration(), end, false);
-            }
-        });
-
-        pvideoView.setOnGestureSwipeRightListener(new IPolyvOnGestureSwipeRightListener() {
-
-            @Override
-            public void callback(boolean start, boolean end) {
-                // 右滑事件
-                Log.d(TAG, String.format("SwipeRight %b %b", start, end));
-                if (fastForwardPos == 0) {
-                    fastForwardPos = pvideoView.getCurrentPosition();
-                }
-
-                if (end) {
-                    if (fastForwardPos > pvideoView.getDuration())
-                        fastForwardPos = pvideoView.getDuration();
-                    pvideoView.seekTo(fastForwardPos);
-                    if (pvideoView.isCompletedState()) {
-                        pvideoView.start();
-                    }
-                    fastForwardPos = 0;
-                } else {
-                    fastForwardPos += 10000;
-                    if (fastForwardPos > pvideoView.getDuration())
-                        fastForwardPos = pvideoView.getDuration();
-                }
-                progressView.setViewProgressValue(fastForwardPos, pvideoView.getDuration(), end, true);
-            }
-        });
-
-        pvideoView.setOnGestureClickListener(new IPolyvOnGestureClickListener() {
-            @Override
-            public void callback(boolean start, boolean end) {
-                if (pvideoView.isInPlaybackState() && PolyvPlayerMediaController.this != null)
-                    if (isShowing())
-                        hide();
-                    else
-                        show();
-            }
-        });
-    }
-
 
     public void preparedView() {
         if (videoView != null) {
@@ -572,7 +370,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
             handler.removeMessages(HIDE);
             handler.removeMessages(SHOW_PROGRESS);
             resetSetLayout(View.GONE);
-            //resetShareLayout(View.GONE);
             resetSpeedLayout(View.GONE);
             resetBitRateLayout(View.GONE);
             isShowing = !isShowing;
@@ -693,10 +490,12 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         if (videoView != null) {
             if (videoView.isPlaying()) {
                 videoView.pause();
+                status_isPlaying = false;
                 iv_play.setSelected(true);
                 iv_play_land.setSelected(true);
             } else {
                 videoView.start();
+                status_isPlaying = true;
                 iv_play.setSelected(false);
                 iv_play_land.setSelected(false);
             }
@@ -755,6 +554,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         }
     };
 
+
     //重置控制栏的隐藏时间
     private void resetHideTime(int delayedTime) {
         handler.removeMessages(HIDE);
@@ -794,6 +594,41 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         rl_center_set.setVisibility(isVisible);
     }
 
+   /* //重置弹幕布局的显示状态
+    private void resetDanmuLayout(int isVisible) {
+        if (isVisible == View.VISIBLE) {
+            show(-1);
+            resetTopBottomLayout(View.GONE);
+            resetSideLayout(View.GONE);
+            resetBitRateLayout(View.GONE, false);
+            resetSpeedLayout(View.GONE, false);
+            et_dmedit.requestFocus();
+            et_dmedit.setText("");
+            if (videoView != null) {
+                status_isPlaying = videoView.isPlaying();
+                videoView.pause(true);
+            }
+        } else if (rl_center_danmu.getVisibility() == View.VISIBLE) {
+            if (videoView != null && status_isPlaying) {
+                videoView.start();
+            }
+        }
+        iv_dmset.setSelected(false);
+        rl_dmbot.setVisibility(View.GONE);
+        rl_center_danmu.setVisibility(isVisible);
+    }
+*/
+
+   /* //重置分享布局的显示状态
+    private void resetShareLayout(int isVisible) {
+        if (isVisible == View.VISIBLE) {
+            show(-1);
+            resetTopBottomLayout(View.GONE);
+            resetSideLayout(View.GONE);
+        }
+        rl_center_share.setVisibility(isVisible);
+    }
+*/
     //重置选择播放器银幕比率控件的状态
     private void resetRatioView(int screenRatio) {
         initRatioView(screenRatio);
@@ -822,6 +657,8 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                 break;
         }
     }
+
+
 
     //重置选择字幕的控件
     private void resetSrtView(int srtPosition) {
@@ -1057,10 +894,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         hide();
     }
 
-    private void toastMsg(final String msg) {
-        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-    }
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -1078,9 +911,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                 break;
             case R.id.iv_finish:
                 changeToPortrait();
-                break;
-            case R.id.iv_liebiao:
-                Toast.makeText(getContext(), "点击打开列表", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.tv_full:
                 resetRatioView(PolyvPlayerScreenRatio.AR_ASPECT_FILL_PARENT);
@@ -1151,9 +981,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
             case R.id.iv_close_set:
                 hide();
                 break;
-//            case iv_close_share:
-//                hide();
-//                break;
             case R.id.iv_close_speed:
                 hide();
                 break;
@@ -1161,54 +988,5 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         //如果控制栏不是处于一直显示的状态，那么重置控制栏隐藏的时间
         if (!status_showalways)
             resetHideTime(longTime);
-    }
-
-    /**
-     * 播放模式
-     *
-     * @author TanQu
-     */
-    public enum PlayMode {
-        /**
-         * 横屏
-         */
-        landScape(3),
-        /**
-         * 竖屏
-         */
-        portrait(4);
-
-        private final int code;
-
-        private PlayMode(int code) {
-            this.code = code;
-        }
-
-        /**
-         * 取得类型对应的code
-         *
-         * @return
-         */
-        public int getCode() {
-            return code;
-        }
-
-        public static PlayMode getPlayMode(int code) {
-            switch (code) {
-                case 3:
-                    return landScape;
-                case 4:
-                    return portrait;
-            }
-
-            return null;
-        }
-    }
-
-    public void clearGestureInfo() {
-        videoView.clearGestureInfo();
-        progressView.hide();
-        volumeView.hide();
-        lightView.hide();
     }
 }

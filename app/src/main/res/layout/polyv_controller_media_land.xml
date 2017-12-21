@@ -18,7 +18,6 @@
             style="@style/iv_click_controller_land_top"
             android:src="@drawable/polyv_btn_back_s" />
 
-        <!--视频的标题-->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
@@ -42,7 +41,6 @@
             style="@style/iv_click_controller_land_top"
             android:layout_alignParentRight="true"
             android:src="@drawable/category" />
-
     </RelativeLayout>
 
     <!-- 中间选择清晰度布局 -->
@@ -57,6 +55,7 @@
         layout="@layout/polyv_controller_media_center_speed"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 
     <!-- 中间设置布局 -->
 
@@ -74,7 +73,6 @@
         android:layout_centerVertical="true"
         android:layout_marginRight="@dimen/center_right_margin_right"
         android:orientation="vertical">
-
     </LinearLayout>
 
     <RelativeLayout
@@ -89,14 +87,11 @@
             android:id="@+id/iv_play_land"
             style="@style/iv_click_controller_land_bottom"
             android:src="@drawable/polyv_play_bt_pic" />
-
-
         <ImageView
             android:id="@+id/iv_houtui"
             style="@style/iv_click_controller_land_bottom"
             android:layout_toRightOf="@id/iv_play_land"
             android:src="@drawable/polyv_btn_exitfulls" />
-
 
         <TextView
             android:id="@+id/tv_curtime_land"
@@ -149,7 +144,6 @@
             style="@style/tv_click_controller_land_bottom"
             android:layout_toLeftOf="@id/tv_speed"
             android:text="流畅" />
-
     </RelativeLayout>
 
     <SeekBar

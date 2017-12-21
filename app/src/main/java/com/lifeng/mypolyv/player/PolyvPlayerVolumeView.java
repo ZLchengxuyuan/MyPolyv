@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.lifeng.mypolyv.R;
 
+
 public class PolyvPlayerVolumeView extends FrameLayout {
     //volumeView
     private View view;
