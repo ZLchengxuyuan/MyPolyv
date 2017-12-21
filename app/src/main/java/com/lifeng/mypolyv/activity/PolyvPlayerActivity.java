@@ -1,20 +1,14 @@
 package com.lifeng.mypolyv.activity;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.easefun.polyvsdk.video.PolyvPlayErrorReason;
 import com.easefun.polyvsdk.video.PolyvVideoView;
-import com.easefun.polyvsdk.video.listener.IPolyvOnAdvertisementOutListener2;
-import com.easefun.polyvsdk.video.listener.IPolyvOnErrorListener2;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureClickListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftDownListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftUpListener;
@@ -23,12 +17,9 @@ import com.easefun.polyvsdk.video.listener.IPolyvOnGestureRightUpListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeLeftListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeRightListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnPreparedListener2;
-import com.easefun.polyvsdk.video.listener.IPolyvOnVideoStatusListener;
-import com.easefun.polyvsdk.vo.PolyvADMatterVO;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.player.PolyvPlayerMediaController;
 import com.lifeng.mypolyv.player.PolyvPlayerProgressView;
-import com.lifeng.mypolyv.utils.PolyvScreenUtils;
 
 public class PolyvPlayerActivity extends FragmentActivity {
     private static final String TAG = PolyvPlayerActivity.class.getSimpleName();
@@ -46,19 +37,10 @@ public class PolyvPlayerActivity extends FragmentActivity {
      * 视频控制栏
      */
     private PolyvPlayerMediaController mediaController = null;
-
-//    /**
-//     * 视频广告，视频片头加载缓冲视图
-//     */
-//    private ProgressBar auxiliaryLoadingProgress = null;
-
-
-
     /**
      * 手势出现的进度界面 //// todo导致竖屏无法得到进度条的时间变化和视频总时间
      */
     private PolyvPlayerProgressView progressView = null;
-
 
     private int fastForwardPos = 0;
     private boolean isPlay = false;
@@ -72,10 +54,10 @@ public class PolyvPlayerActivity extends FragmentActivity {
         findIdAndNew();
         initView();
 
-        int playModeCode = getIntent().getIntExtra("playMode", PlayMode.portrait.getCode());
-        PlayMode playMode = PlayMode.getPlayMode(playModeCode);
+        int playModeCode = getIntent().getIntExtra("playMode", PolyvPlayerMediaController.PlayMode.portrait.getCode());
+        PolyvPlayerMediaController.PlayMode playMode = PolyvPlayerMediaController.PlayMode.getPlayMode(playModeCode);
         if (playMode == null)
-            playMode = PlayMode.portrait;
+            playMode = PolyvPlayerMediaController.PlayMode.portrait;
         String vid = "7ac375c1ed34d573a17dc80127835261_7";
 //        int bitrate = getIntent().getIntExtra("bitrate", PolyvBitRate.ziDong.getNum());
 //        boolean startNow = getIntent().getBooleanExtra("startNow", false);
@@ -98,15 +80,8 @@ public class PolyvPlayerActivity extends FragmentActivity {
         viewLayout = (RelativeLayout) findViewById(R.id.view_layout);
         videoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
         mediaController = (PolyvPlayerMediaController) findViewById(R.id.polyv_player_media_controller);
-
-//        auxiliaryLoadingProgress = (ProgressBar) findViewById(R.id.auxiliary_loading_progress);
-
-
         progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
-
-
         mediaController.initConfig(viewLayout);
-//        auxiliaryVideoView.setPlayerBufferingIndicator(auxiliaryLoadingProgress);
         videoView.setMediaController(mediaController);
         videoView.setAuxiliaryVideoView(mediaController.auxiliaryVideoView);
         videoView.setPlayerBufferingIndicator(mediaController.loadingProgress);
@@ -120,68 +95,12 @@ public class PolyvPlayerActivity extends FragmentActivity {
         videoView.setOpenPreload(true, 2);
         videoView.setAutoContinue(true);
         videoView.setNeedGestureDetector(true);
-
         videoView.setOnPreparedListener(new IPolyvOnPreparedListener2() {
             @Override
             public void onPrepared() {
                 mediaController.preparedView();
-                // 没开预加载在这里开始弹幕
-                // danmuFragment.start();
             }
         });
-
-
-        videoView.setOnVideoStatusListener(new IPolyvOnVideoStatusListener() {
-            @Override
-            public void onStatus(int status) {
-                if (status < 60) {
-                    Toast.makeText(PolyvPlayerActivity.this, "状态错误 " + status, Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.d(TAG, String.format("状态正常 %d", status));
-                }
-            }
-        });
-
-
-        videoView.setOnErrorListener(new IPolyvOnErrorListener2() {
-            @Override
-            public boolean onError() {
-                Toast.makeText(PolyvPlayerActivity.this, "当前视频无法播放，请向管理员反馈(error code " + PolyvPlayErrorReason.VIDEO_ERROR + ")", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-        videoView.setOnAdvertisementOutListener(new IPolyvOnAdvertisementOutListener2() {
-            @Override
-            public void onOut(@NonNull PolyvADMatterVO adMatter) {
-            }
-        });
-
-
-       /* videoView.setOnAdvertisementEventListener(new IPolyvOnAdvertisementEventListener2() {
-            @Override
-            public void onShow(PolyvADMatterVO adMatter) {
-                Log.i(TAG, "开始播放视频广告");
-            }
-
-            @Override
-            public void onClick(PolyvADMatterVO adMatter) {
-                if (!TextUtils.isEmpty(adMatter.getAddrUrl())) {
-                    try {
-                        new URL(adMatter.getAddrUrl());
-                    } catch (MalformedURLException e1) {
-                        Log.e(TAG, PolyvSDKUtil.getExceptionFullMessage(e1, -1));
-                        return;
-                    }
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(adMatter.getAddrUrl()));
-                    startActivity(intent);
-                }
-            }
-        });
-
-*/
         videoView.setOnGestureLeftUpListener(new IPolyvOnGestureLeftUpListener() {
 
             @Override
@@ -326,28 +245,13 @@ public class PolyvPlayerActivity extends FragmentActivity {
         if (TextUtils.isEmpty(vid)) return;
         if (iv_vlms_cover != null && iv_vlms_cover.getVisibility() == View.VISIBLE)
             iv_vlms_cover.setVisibility(View.GONE);
-
         videoView.release();
         mediaController.hide();
         mediaController.loadingProgress.setVisibility(View.GONE);
         mediaController.auxiliaryVideoView.hide();
-//        auxiliaryLoadingProgress.setVisibility(View.GONE);
-
-
         //调用setVid方法视频会自动播放
         videoView.setVid(vid);
-
     }
-
-    private void clearGestureInfo() {
-        videoView.clearGestureInfo();
-        progressView.hide();
-        //volumeView.hide();
-        //lightView.hide();
-        mediaController.setVolumeHide();
-        mediaController.setLightHide();
-    }
-
 
     @Override
     protected void onResume() {
@@ -362,7 +266,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        clearGestureInfo();
+        mediaController.clearGestureInfo();
         mediaController.pause();
     }
 
@@ -372,7 +276,6 @@ public class PolyvPlayerActivity extends FragmentActivity {
         //弹出去暂停
         isPlay = videoView.onActivityStop();
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -380,58 +283,4 @@ public class PolyvPlayerActivity extends FragmentActivity {
         mediaController.disable();
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (PolyvScreenUtils.isLandscape(this) && mediaController != null) {
-                mediaController.changeToPortrait();
-                return true;
-            }
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }
-
-
-    /**
-     * 播放模式
-     *
-     * @author TanQu
-     */
-    public enum PlayMode {
-        /**
-         * 横屏
-         */
-        landScape(3),
-        /**
-         * 竖屏
-         */
-        portrait(4);
-
-        private final int code;
-
-        private PlayMode(int code) {
-            this.code = code;
-        }
-
-        /**
-         * 取得类型对应的code
-         *
-         * @return
-         */
-        public int getCode() {
-            return code;
-        }
-
-        public static PlayMode getPlayMode(int code) {
-            switch (code) {
-                case 3:
-                    return landScape;
-                case 4:
-                    return portrait;
-            }
-
-            return null;
-        }
-    }
 }
