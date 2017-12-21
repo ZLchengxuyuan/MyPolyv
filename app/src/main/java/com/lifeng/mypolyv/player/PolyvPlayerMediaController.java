@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import com.easefun.polyvsdk.ijk.PolyvPlayerScreenRatio;
 import com.easefun.polyvsdk.video.IPolyvVideoView;
 import com.easefun.polyvsdk.video.PolyvBaseMediaController;
 import com.easefun.polyvsdk.video.PolyvVideoView;
+import com.easefun.polyvsdk.video.auxiliary.PolyvAuxiliaryVideoView;
 import com.easefun.polyvsdk.vo.PolyvVideoVO;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.utils.PolyvScreenUtils;
@@ -30,6 +32,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
+
+    /**
+     * 手势出现的亮度界面
+     */
+    private PolyvPlayerLightView lightView = null;
+
+    /**
+     * 手势出现的音量界面
+     */
+    private PolyvPlayerVolumeView volumeView = null;
+
+    /**
+     * 视频加载缓冲视图
+     */
+    public ProgressBar loadingProgress = null;
+    /**
+     * 用于播放广告片头的播放器
+     */
+    public PolyvAuxiliaryVideoView auxiliaryVideoView = null;
 
     private static final String TAG = PolyvPlayerMediaController.class.getSimpleName();
     private Context mContext = null;
@@ -210,6 +231,10 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
 
     private void findIdAndNew() {
+        lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
+        volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
+        loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
+        auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
 
         iv_houtui = (ImageView) findViewById(R.id.iv_houtui);
         //竖屏的view
@@ -269,19 +294,19 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         sensorHelper = new PolyvSensorHelper(videoActivity);
     }
 
-//    public void setViewLightValue(int i,boolean b) {
-//        lightView.setViewLightValue(i,b);
-//    }
-//    public void setLightHide(){
-//        lightView.hide();
-//    }
-//    public void setViewVolumeValue(int i,boolean b) {
-//        volumeView.setViewVolumeValue(i,b);
-//    }
-//    public void setVolumeHide(){
-//        volumeView.hide();
-//    }
-//
+    public void setViewLightValue(int i,boolean b) {
+        lightView.setViewLightValue(i,b);
+    }
+    public void setLightHide(){
+        lightView.hide();
+    }
+    public void setViewVolumeValue(int i,boolean b) {
+        volumeView.setViewVolumeValue(i,b);
+    }
+    public void setVolumeHide(){
+        volumeView.hide();
+    }
+
 //    public void setProgressViewHide(){
 //        progressView.hide();
 //    }

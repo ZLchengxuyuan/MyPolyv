@@ -8,13 +8,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.easefun.polyvsdk.video.PolyvPlayErrorReason;
 import com.easefun.polyvsdk.video.PolyvVideoView;
-import com.easefun.polyvsdk.video.auxiliary.PolyvAuxiliaryVideoView;
 import com.easefun.polyvsdk.video.listener.IPolyvOnAdvertisementOutListener2;
 import com.easefun.polyvsdk.video.listener.IPolyvOnErrorListener2;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureClickListener;
@@ -28,10 +26,8 @@ import com.easefun.polyvsdk.video.listener.IPolyvOnPreparedListener2;
 import com.easefun.polyvsdk.video.listener.IPolyvOnVideoStatusListener;
 import com.easefun.polyvsdk.vo.PolyvADMatterVO;
 import com.lifeng.mypolyv.R;
-import com.lifeng.mypolyv.player.PolyvPlayerLightView;
 import com.lifeng.mypolyv.player.PolyvPlayerMediaController;
 import com.lifeng.mypolyv.player.PolyvPlayerProgressView;
-import com.lifeng.mypolyv.player.PolyvPlayerVolumeView;
 import com.lifeng.mypolyv.utils.PolyvScreenUtils;
 
 public class PolyvPlayerActivity extends FragmentActivity {
@@ -50,31 +46,19 @@ public class PolyvPlayerActivity extends FragmentActivity {
      * 视频控制栏
      */
     private PolyvPlayerMediaController mediaController = null;
-    /**
-     * 用于播放广告片头的播放器
-     */
-    private PolyvAuxiliaryVideoView auxiliaryVideoView = null;
-    /**
-     * 视频广告，视频片头加载缓冲视图
-     */
-    private ProgressBar auxiliaryLoadingProgress = null;
+
+//    /**
+//     * 视频广告，视频片头加载缓冲视图
+//     */
+//    private ProgressBar auxiliaryLoadingProgress = null;
+
+
 
     /**
-     * 手势出现的亮度界面
-     */
-    private PolyvPlayerLightView lightView = null;
-    /**
-     * 手势出现的音量界面
-     */
-    private PolyvPlayerVolumeView volumeView = null;
-    /**
-     * 手势出现的进度界面
+     * 手势出现的进度界面 //// todo导致竖屏无法得到进度条的时间变化和视频总时间
      */
     private PolyvPlayerProgressView progressView = null;
-    /**
-     * 视频加载缓冲视图
-     */
-    private ProgressBar loadingProgress = null;
+
 
     private int fastForwardPos = 0;
     private boolean isPlay = false;
@@ -114,18 +98,18 @@ public class PolyvPlayerActivity extends FragmentActivity {
         viewLayout = (RelativeLayout) findViewById(R.id.view_layout);
         videoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
         mediaController = (PolyvPlayerMediaController) findViewById(R.id.polyv_player_media_controller);
-        auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
-        auxiliaryLoadingProgress = (ProgressBar) findViewById(R.id.auxiliary_loading_progress);
-        lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
-        volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
+
+//        auxiliaryLoadingProgress = (ProgressBar) findViewById(R.id.auxiliary_loading_progress);
+
+
         progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
-        loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
+
 
         mediaController.initConfig(viewLayout);
-        auxiliaryVideoView.setPlayerBufferingIndicator(auxiliaryLoadingProgress);
+//        auxiliaryVideoView.setPlayerBufferingIndicator(auxiliaryLoadingProgress);
         videoView.setMediaController(mediaController);
-        videoView.setAuxiliaryVideoView(auxiliaryVideoView);
-        videoView.setPlayerBufferingIndicator(loadingProgress);
+        videoView.setAuxiliaryVideoView(mediaController.auxiliaryVideoView);
+        videoView.setPlayerBufferingIndicator(mediaController.loadingProgress);
     }
 
     private void initView() {
@@ -209,7 +193,8 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                lightView.setViewLightValue(brightness, end);
+                //lightView.setViewLightValue(brightness, end);
+                mediaController.setViewLightValue(brightness,end);
             }
         });
 
@@ -224,7 +209,8 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                lightView.setViewLightValue(brightness, end);
+                //lightView.setViewLightValue(brightness, end);
+                mediaController.setViewLightValue(brightness,end);
             }
         });
 
@@ -240,7 +226,8 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setVolume(volume);
-                volumeView.setViewVolumeValue(volume, end);
+                //volumeView.setViewVolumeValue(volume, end);
+                mediaController.setViewVolumeValue(volume,end);
             }
         });
 
@@ -256,7 +243,8 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setVolume(volume);
-                volumeView.setViewVolumeValue(volume, end);
+                //volumeView.setViewVolumeValue(volume, end);
+                mediaController.setViewVolumeValue(volume,end);
             }
         });
 
@@ -341,9 +329,9 @@ public class PolyvPlayerActivity extends FragmentActivity {
 
         videoView.release();
         mediaController.hide();
-        loadingProgress.setVisibility(View.GONE);
-        auxiliaryVideoView.hide();
-        auxiliaryLoadingProgress.setVisibility(View.GONE);
+        mediaController.loadingProgress.setVisibility(View.GONE);
+        mediaController.auxiliaryVideoView.hide();
+//        auxiliaryLoadingProgress.setVisibility(View.GONE);
 
 
         //调用setVid方法视频会自动播放
@@ -354,8 +342,10 @@ public class PolyvPlayerActivity extends FragmentActivity {
     private void clearGestureInfo() {
         videoView.clearGestureInfo();
         progressView.hide();
-        volumeView.hide();
-        lightView.hide();
+        //volumeView.hide();
+        //lightView.hide();
+        mediaController.setVolumeHide();
+        mediaController.setLightHide();
     }
 
 
