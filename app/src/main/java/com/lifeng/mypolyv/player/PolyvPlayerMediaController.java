@@ -85,7 +85,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     //横屏的控制栏，顶部布局，底部布局
     private RelativeLayout rl_land, rl_top, rl_bot;
     //横屏的切屏按钮，横屏的播放/暂停按钮,横屏的返回按钮，设置按钮，分享按钮，弹幕开关
-    private ImageView iv_port, iv_play_land, iv_finish;
+    private ImageView iv_port, iv_play_land, iv_finish, iv_dmswitch;
     // 横屏的显示播放进度控件,视频的标题,选择播放速度按钮，选择码率按钮
     private TextView tv_curtime_land, tv_tottime_land, tv_title, tv_speed, tv_bit;
     // 横屏的进度条
@@ -310,6 +310,55 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 //    public void setProgressViewHide(){
 //        progressView.hide();
 //    }
+
+    public void clearGestureInfo() {
+        videoView.clearGestureInfo();
+        hide();
+        setVolumeHide();
+        setLightHide();
+    }
+    /**
+     * 播放模式
+     *
+     * @author TanQu
+     */
+    public enum PlayMode {
+        /**
+         * 横屏
+         */
+        landScape(3),
+        /**
+         * 竖屏
+         */
+        portrait(4);
+
+        private final int code;
+
+        private PlayMode(int code) {
+            this.code = code;
+        }
+
+        /**
+         * 取得类型对应的code
+         *
+         * @return
+         */
+        public int getCode() {
+            return code;
+        }
+
+        public static PlayMode getPlayMode(int code) {
+            switch (code) {
+                case 3:
+                    return landScape;
+                case 4:
+                    return portrait;
+            }
+
+            return null;
+        }
+    }
+
 
     public void initView() {
         iv_land.setOnClickListener(this);
@@ -1013,48 +1062,5 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         //如果控制栏不是处于一直显示的状态，那么重置控制栏隐藏的时间
         if (!status_showalways)
             resetHideTime(longTime);
-    }
-    /**
-     * 播放模式
-     *
-     * @author TanQu
-     */
-    public enum PlayMode {
-        /**
-         * 横屏
-         */
-        landScape(3),
-        /**
-         * 竖屏
-         */
-        portrait(4);
-        private final int code;
-        private PlayMode(int code) {
-            this.code = code;
-        }
-        /**
-         * 取得类型对应的code
-         *
-         * @return
-         */
-        public int getCode() {
-            return code;
-        }
-        public static PlayMode getPlayMode(int code) {
-            switch (code) {
-                case 3:
-                    return landScape;
-                case 4:
-                    return portrait;
-            }
-            return null;
-        }
-    }
-
-    public void clearGestureInfo() {
-        videoView.clearGestureInfo();
-        hide();
-        setVolumeHide();
-        setLightHide();
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -20,10 +21,10 @@ import com.easefun.polyvsdk.video.listener.IPolyvOnPreparedListener2;
 import com.lifeng.mypolyv.R;
 import com.lifeng.mypolyv.player.PolyvPlayerMediaController;
 import com.lifeng.mypolyv.player.PolyvPlayerProgressView;
+import com.lifeng.mypolyv.utils.PolyvScreenUtils;
 
 public class PolyvPlayerActivity extends FragmentActivity {
     private static final String TAG = PolyvPlayerActivity.class.getSimpleName();
-
     private ImageView iv_vlms_cover;
     /**
      * 播放器的parentView
@@ -37,11 +38,11 @@ public class PolyvPlayerActivity extends FragmentActivity {
      * 视频控制栏
      */
     private PolyvPlayerMediaController mediaController = null;
+
     /**
      * 手势出现的进度界面 //// todo导致竖屏无法得到进度条的时间变化和视频总时间
      */
     private PolyvPlayerProgressView progressView = null;
-
     private int fastForwardPos = 0;
     private boolean isPlay = false;
 
@@ -53,7 +54,6 @@ public class PolyvPlayerActivity extends FragmentActivity {
         setContentView(R.layout.activity_polyv_player);
         findIdAndNew();
         initView();
-
         int playModeCode = getIntent().getIntExtra("playMode", PolyvPlayerMediaController.PlayMode.portrait.getCode());
         PolyvPlayerMediaController.PlayMode playMode = PolyvPlayerMediaController.PlayMode.getPlayMode(playModeCode);
         if (playMode == null)
@@ -95,6 +95,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
         videoView.setOpenPreload(true, 2);
         videoView.setAutoContinue(true);
         videoView.setNeedGestureDetector(true);
+
         videoView.setOnPreparedListener(new IPolyvOnPreparedListener2() {
             @Override
             public void onPrepared() {
@@ -112,8 +113,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                //lightView.setViewLightValue(brightness, end);
-                mediaController.setViewLightValue(brightness,end);
+                mediaController.setViewLightValue(brightness, end);
             }
         });
 
@@ -128,8 +128,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                //lightView.setViewLightValue(brightness, end);
-                mediaController.setViewLightValue(brightness,end);
+                mediaController.setViewLightValue(brightness, end);
             }
         });
 
@@ -145,8 +144,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setVolume(volume);
-                //volumeView.setViewVolumeValue(volume, end);
-                mediaController.setViewVolumeValue(volume,end);
+                mediaController.setViewVolumeValue(volume, end);
             }
         });
 
@@ -162,8 +160,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
                 }
 
                 videoView.setVolume(volume);
-                //volumeView.setViewVolumeValue(volume, end);
-                mediaController.setViewVolumeValue(volume,end);
+                mediaController.setViewVolumeValue(volume, end);
             }
         });
 
@@ -251,7 +248,9 @@ public class PolyvPlayerActivity extends FragmentActivity {
         mediaController.auxiliaryVideoView.hide();
         //调用setVid方法视频会自动播放
         videoView.setVid(vid);
+
     }
+
 
     @Override
     protected void onResume() {
@@ -276,6 +275,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
         //弹出去暂停
         isPlay = videoView.onActivityStop();
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -283,4 +283,15 @@ public class PolyvPlayerActivity extends FragmentActivity {
         mediaController.disable();
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (PolyvScreenUtils.isLandscape(this) && mediaController != null) {
+                mediaController.changeToPortrait();
+                return true;
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
 }
