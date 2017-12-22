@@ -36,8 +36,8 @@ public class PolyvPlayerProgressView extends FrameLayout {
 
     private void findIdAndNew() {
         rl_center_progress = (RelativeLayout) view.findViewById(R.id.rl_center_progress);
-        tv_curtime = (TextView) view.findViewById(R.id.tv_curtimeprogressbar);
-        tv_tottime = (TextView) view.findViewById(R.id.tv_tottimeprogressbar);
+        tv_curtime = (TextView) view.findViewById(R.id.tv_curtime);
+        tv_tottime = (TextView) view.findViewById(R.id.tv_tottime);
         iv_left = (ImageView) view.findViewById(R.id.iv_left);
         iv_right = (ImageView) view.findViewById(R.id.iv_right);
     }

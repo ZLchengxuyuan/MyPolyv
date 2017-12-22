@@ -36,7 +36,7 @@
             android:layout_marginTop="@dimen/common_margin_tb" >
 
             <TextView
-                android:id="@+id/tv_curtimeprogressbar"
+                android:id="@+id/tv_curtime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -55,7 +55,7 @@
                 android:textSize="@dimen/bottom_right_text_size" />
 
             <TextView
-                android:id="@+id/tv_tottimeprogressbar"
+                android:id="@+id/tv_tottime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"

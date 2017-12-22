@@ -7,9 +7,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.easefun.polyvsdk.video.PolyvVideoView;
+import com.easefun.polyvsdk.video.auxiliary.PolyvAuxiliaryVideoView;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureClickListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftDownListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureLeftUpListener;
@@ -19,11 +21,15 @@ import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeLeftListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnGestureSwipeRightListener;
 import com.easefun.polyvsdk.video.listener.IPolyvOnPreparedListener2;
 import com.lifeng.mypolyv.R;
+import com.lifeng.mypolyv.player.PolyvPlayerLightView;
 import com.lifeng.mypolyv.player.PolyvPlayerMediaController;
+import com.lifeng.mypolyv.player.PolyvPlayerProgressView;
+import com.lifeng.mypolyv.player.PolyvPlayerVolumeView;
 import com.lifeng.mypolyv.utils.PolyvScreenUtils;
 
 public class PolyvPlayerActivity extends FragmentActivity {
     private static final String TAG = PolyvPlayerActivity.class.getSimpleName();
+
     private ImageView iv_vlms_cover;
     /**
      * 播放器的parentView
@@ -32,12 +38,36 @@ public class PolyvPlayerActivity extends FragmentActivity {
     /**
      * 播放主视频播放器
      */
-    private PolyvVideoView pvideoView = null;
+    private PolyvVideoView videoView = null;
     /**
      * 视频控制栏
      */
     private PolyvPlayerMediaController mediaController = null;
+    /**
+     * 用于播放广告片头的播放器
+     */
+    private PolyvAuxiliaryVideoView auxiliaryVideoView = null;
+    /**
+     * 视频广告，视频片头加载缓冲视图
+     */
+    private ProgressBar auxiliaryLoadingProgress = null;
 
+    /**
+     * 手势出现的亮度界面
+     */
+    private PolyvPlayerLightView lightView = null;
+    /**
+     * 手势出现的音量界面
+     */
+    private PolyvPlayerVolumeView volumeView = null;
+    /**
+     * 手势出现的进度界面
+     */
+    private PolyvPlayerProgressView progressView = null;
+    /**
+     * 视频加载缓冲视图
+     */
+    private ProgressBar loadingProgress = null;
 
     private int fastForwardPos = 0;
     private boolean isPlay = false;
@@ -50,10 +80,11 @@ public class PolyvPlayerActivity extends FragmentActivity {
         setContentView(R.layout.activity_polyv_player);
         findIdAndNew();
         initView();
-        int playModeCode = getIntent().getIntExtra("playMode", PolyvPlayerMediaController.PlayMode.portrait.getCode());
-        PolyvPlayerMediaController.PlayMode playMode = PolyvPlayerMediaController.PlayMode.getPlayMode(playModeCode);
+
+        int playModeCode = getIntent().getIntExtra("playMode", PlayMode.portrait.getCode());
+        PlayMode playMode = PlayMode.getPlayMode(playModeCode);
         if (playMode == null)
-            playMode = PolyvPlayerMediaController.PlayMode.portrait;
+            playMode = PlayMode.portrait;
         String vid = "7ac375c1ed34d573a17dc80127835261_7";
 //        int bitrate = getIntent().getIntExtra("bitrate", PolyvBitRate.ziDong.getNum());
 //        boolean startNow = getIntent().getBooleanExtra("startNow", false);
@@ -74,108 +105,117 @@ public class PolyvPlayerActivity extends FragmentActivity {
 
     private void findIdAndNew() {
         viewLayout = (RelativeLayout) findViewById(R.id.view_layout);
-        pvideoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
+        videoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
         mediaController = (PolyvPlayerMediaController) findViewById(R.id.polyv_player_media_controller);
+        auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
+        auxiliaryLoadingProgress = (ProgressBar) findViewById(R.id.auxiliary_loading_progress);
+        lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
+        volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
+        progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
+        loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
 
         mediaController.initConfig(viewLayout);
-        pvideoView.setMediaController(mediaController);
-        pvideoView.setAuxiliaryVideoView(mediaController.auxiliaryVideoView);
-        pvideoView.setPlayerBufferingIndicator(mediaController.loadingProgress);
+        auxiliaryVideoView.setPlayerBufferingIndicator(auxiliaryLoadingProgress);
+        videoView.setMediaController(mediaController);
+        videoView.setAuxiliaryVideoView(auxiliaryVideoView);
+        videoView.setPlayerBufferingIndicator(loadingProgress);
     }
 
     private void initView() {
-        pvideoView.setOpenAd(true);
-        pvideoView.setOpenTeaser(true);
-        pvideoView.setOpenQuestion(true);
-        pvideoView.setOpenSRT(true);
-        pvideoView.setOpenPreload(true, 2);
-        pvideoView.setAutoContinue(true);
-        pvideoView.setNeedGestureDetector(true);
+        videoView.setOpenAd(true);
+        videoView.setOpenTeaser(true);
+        videoView.setOpenQuestion(true);
+        videoView.setOpenSRT(true);
+        videoView.setOpenPreload(true, 2);
+        videoView.setAutoContinue(true);
+        videoView.setNeedGestureDetector(true);
 
-        pvideoView.setOnPreparedListener(new IPolyvOnPreparedListener2() {
+        videoView.setOnPreparedListener(new IPolyvOnPreparedListener2() {
             @Override
             public void onPrepared() {
                 mediaController.preparedView();
             }
         });
-        pvideoView.setOnGestureLeftUpListener(new IPolyvOnGestureLeftUpListener() {
+
+
+        videoView.setOnGestureLeftUpListener(new IPolyvOnGestureLeftUpListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("LeftUp %b %b brightness %d", start, end, pvideoView.getBrightness(PolyvPlayerActivity.this)));
-                int brightness = pvideoView.getBrightness(PolyvPlayerActivity.this) + 5;
+                Log.d(TAG, String.format("LeftUp %b %b brightness %d", start, end, videoView.getBrightness(PolyvPlayerActivity.this)));
+                int brightness = videoView.getBrightness(PolyvPlayerActivity.this) + 5;
                 if (brightness > 100) {
                     brightness = 100;
                 }
 
-                pvideoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                mediaController.setViewLightValue(brightness, end);
+                videoView.setBrightness(PolyvPlayerActivity.this, brightness);
+                lightView.setViewLightValue(brightness, end);
             }
         });
 
-        pvideoView.setOnGestureLeftDownListener(new IPolyvOnGestureLeftDownListener() {
+        videoView.setOnGestureLeftDownListener(new IPolyvOnGestureLeftDownListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("LeftDown %b %b brightness %d", start, end, pvideoView.getBrightness(PolyvPlayerActivity.this)));
-                int brightness = pvideoView.getBrightness(PolyvPlayerActivity.this) - 5;
+                Log.d(TAG, String.format("LeftDown %b %b brightness %d", start, end, videoView.getBrightness(PolyvPlayerActivity.this)));
+                int brightness = videoView.getBrightness(PolyvPlayerActivity.this) - 5;
                 if (brightness < 0) {
                     brightness = 0;
                 }
 
-                pvideoView.setBrightness(PolyvPlayerActivity.this, brightness);
-                mediaController.setViewLightValue(brightness, end);
+                videoView.setBrightness(PolyvPlayerActivity.this, brightness);
+                lightView.setViewLightValue(brightness, end);
             }
         });
 
-        pvideoView.setOnGestureRightUpListener(new IPolyvOnGestureRightUpListener() {
+        videoView.setOnGestureRightUpListener(new IPolyvOnGestureRightUpListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("RightUp %b %b volume %d", start, end, pvideoView.getVolume()));
+                Log.d(TAG, String.format("RightUp %b %b volume %d", start, end, videoView.getVolume()));
                 // 加减单位最小为10，否则无效果
-                int volume = pvideoView.getVolume() + 10;
+                int volume = videoView.getVolume() + 10;
                 if (volume > 100) {
                     volume = 100;
                 }
 
-                pvideoView.setVolume(volume);
-                mediaController.setViewVolumeValue(volume, end);
+                videoView.setVolume(volume);
+                volumeView.setViewVolumeValue(volume, end);
             }
         });
 
-        pvideoView.setOnGestureRightDownListener(new IPolyvOnGestureRightDownListener() {
+        videoView.setOnGestureRightDownListener(new IPolyvOnGestureRightDownListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
-                Log.d(TAG, String.format("RightDown %b %b volume %d", start, end, pvideoView.getVolume()));
+                Log.d(TAG, String.format("RightDown %b %b volume %d", start, end, videoView.getVolume()));
                 // 加减单位最小为10，否则无效果
-                int volume = pvideoView.getVolume() - 10;
+                int volume = videoView.getVolume() - 10;
                 if (volume < 0) {
                     volume = 0;
                 }
 
-                pvideoView.setVolume(volume);
-                mediaController.setViewVolumeValue(volume, end);
+                videoView.setVolume(volume);
+                volumeView.setViewVolumeValue(volume, end);
             }
         });
 
-        pvideoView.setOnGestureSwipeLeftListener(new IPolyvOnGestureSwipeLeftListener() {
+        videoView.setOnGestureSwipeLeftListener(new IPolyvOnGestureSwipeLeftListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
                 // 左滑事件
                 Log.d(TAG, String.format("SwipeLeft %b %b", start, end));
                 if (fastForwardPos == 0) {
-                    fastForwardPos = pvideoView.getCurrentPosition();
+                    fastForwardPos = videoView.getCurrentPosition();
                 }
 
                 if (end) {
                     if (fastForwardPos < 0)
                         fastForwardPos = 0;
-                    pvideoView.seekTo(fastForwardPos);
-                    if (pvideoView.isCompletedState()) {
-                        pvideoView.start();
+                    videoView.seekTo(fastForwardPos);
+                    if (videoView.isCompletedState()) {
+                        videoView.start();
                     }
                     fastForwardPos = 0;
                 } else {
@@ -183,41 +223,41 @@ public class PolyvPlayerActivity extends FragmentActivity {
                     if (fastForwardPos <= 0)
                         fastForwardPos = -1;
                 }
-                mediaController.progressView.setViewProgressValue(fastForwardPos, pvideoView.getDuration(), end, false);
+                progressView.setViewProgressValue(fastForwardPos, videoView.getDuration(), end, false);
             }
         });
 
-        pvideoView.setOnGestureSwipeRightListener(new IPolyvOnGestureSwipeRightListener() {
+        videoView.setOnGestureSwipeRightListener(new IPolyvOnGestureSwipeRightListener() {
 
             @Override
             public void callback(boolean start, boolean end) {
                 // 右滑事件
                 Log.d(TAG, String.format("SwipeRight %b %b", start, end));
                 if (fastForwardPos == 0) {
-                    fastForwardPos = pvideoView.getCurrentPosition();
+                    fastForwardPos = videoView.getCurrentPosition();
                 }
 
                 if (end) {
-                    if (fastForwardPos > pvideoView.getDuration())
-                        fastForwardPos = pvideoView.getDuration();
-                    pvideoView.seekTo(fastForwardPos);
-                    if (pvideoView.isCompletedState()) {
-                        pvideoView.start();
+                    if (fastForwardPos > videoView.getDuration())
+                        fastForwardPos = videoView.getDuration();
+                    videoView.seekTo(fastForwardPos);
+                    if (videoView.isCompletedState()) {
+                        videoView.start();
                     }
                     fastForwardPos = 0;
                 } else {
                     fastForwardPos += 10000;
-                    if (fastForwardPos > pvideoView.getDuration())
-                        fastForwardPos = pvideoView.getDuration();
+                    if (fastForwardPos > videoView.getDuration())
+                        fastForwardPos = videoView.getDuration();
                 }
-                mediaController.progressView.setViewProgressValue(fastForwardPos, pvideoView.getDuration(), end, true);
+                progressView.setViewProgressValue(fastForwardPos, videoView.getDuration(), end, true);
             }
         });
 
-        pvideoView.setOnGestureClickListener(new IPolyvOnGestureClickListener() {
+        videoView.setOnGestureClickListener(new IPolyvOnGestureClickListener() {
             @Override
             public void callback(boolean start, boolean end) {
-                if (pvideoView.isInPlaybackState() && mediaController != null)
+                if (videoView.isInPlaybackState() && mediaController != null)
                     if (mediaController.isShowing())
                         mediaController.hide();
                     else
@@ -238,13 +278,24 @@ public class PolyvPlayerActivity extends FragmentActivity {
         if (TextUtils.isEmpty(vid)) return;
         if (iv_vlms_cover != null && iv_vlms_cover.getVisibility() == View.VISIBLE)
             iv_vlms_cover.setVisibility(View.GONE);
-        pvideoView.release();
-        mediaController.hide();
-        mediaController.loadingProgress.setVisibility(View.GONE);
-        mediaController.auxiliaryVideoView.hide();
-        //调用setVid方法视频会自动播放
-        pvideoView.setVid(vid);
 
+        videoView.release();
+        mediaController.hide();
+        loadingProgress.setVisibility(View.GONE);
+        auxiliaryVideoView.hide();
+        auxiliaryLoadingProgress.setVisibility(View.GONE);
+
+
+        //调用setVid方法视频会自动播放
+        videoView.setVid(vid);
+
+    }
+
+    private void clearGestureInfo() {
+        videoView.clearGestureInfo();
+        progressView.hide();
+        volumeView.hide();
+        lightView.hide();
     }
 
 
@@ -253,7 +304,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
         super.onResume();
         //回来后继续播放
         if (isPlay) {
-            pvideoView.onActivityResume();
+            videoView.onActivityResume();
         }
         mediaController.resume();
     }
@@ -261,7 +312,7 @@ public class PolyvPlayerActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mediaController.clearGestureInfo();
+        clearGestureInfo();
         mediaController.pause();
     }
 
@@ -269,13 +320,13 @@ public class PolyvPlayerActivity extends FragmentActivity {
     protected void onStop() {
         super.onStop();
         //弹出去暂停
-        isPlay = pvideoView.onActivityStop();
+        isPlay = videoView.onActivityStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        pvideoView.destroy();
+        videoView.destroy();
         mediaController.disable();
     }
 
@@ -289,5 +340,48 @@ public class PolyvPlayerActivity extends FragmentActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    /**
+     * 播放模式
+     *
+     * @author TanQu
+     */
+    public enum PlayMode {
+        /**
+         * 横屏
+         */
+        landScape(3),
+        /**
+         * 竖屏
+         */
+        portrait(4);
+
+        private final int code;
+
+        private PlayMode(int code) {
+            this.code = code;
+        }
+
+        /**
+         * 取得类型对应的code
+         *
+         * @return
+         */
+        public int getCode() {
+            return code;
+        }
+
+        public static PlayMode getPlayMode(int code) {
+            switch (code) {
+                case 3:
+                    return landScape;
+                case 4:
+                    return portrait;
+            }
+
+            return null;
+        }
     }
 }
