@@ -35,6 +35,10 @@ import java.util.List;
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
     private ImageView iv_vlms_cover;
     /**
+     * 手势出现的进度界面 //// todo导致竖屏无法得到进度条的时间变化和视频总时间
+     */
+    public PolyvPlayerProgressView progressView = null;
+    /**
      * 手势出现的亮度界面
      */
     private PolyvPlayerLightView lightView = null;
@@ -237,6 +241,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
         loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
         auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
+        progressView = (PolyvPlayerProgressView) findViewById(R.id.polyv_player_progress_view);
 
         iv_liebiao = (ImageView) findViewById(R.id.iv_liebiao);
         iv_houtui = (ImageView) findViewById(R.id.iv_houtui);
@@ -319,6 +324,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         setVolumeHide();
         setLightHide();
     }
+
 
     /**
      * 播放模式

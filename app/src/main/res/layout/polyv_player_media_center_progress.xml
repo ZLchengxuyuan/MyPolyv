@@ -55,7 +55,7 @@
                 android:textSize="@dimen/bottom_right_text_size" />
 
             <TextView
-                android:id="@+id/tv_tottime"
+                android:id="@+id/tv_tottimeprogressbar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
