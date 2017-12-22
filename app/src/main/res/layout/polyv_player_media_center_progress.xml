@@ -36,7 +36,7 @@
             android:layout_marginTop="@dimen/common_margin_tb" >
 
             <TextView
-                android:id="@+id/tv_curtime"
+                android:id="@+id/tv_curtimeprogressbar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"

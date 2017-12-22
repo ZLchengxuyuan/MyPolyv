@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.easefun.polyvsdk.ijk.PolyvPlayerScreenRatio;
 import com.easefun.polyvsdk.video.IPolyvVideoView;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PolyvPlayerMediaController extends PolyvBaseMediaController implements View.OnClickListener {
-
+    private ImageView iv_vlms_cover;
     /**
      * 手势出现的亮度界面
      */
@@ -130,8 +131,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     private boolean status_dragging;
     // 控制栏是否处于一直显示的状态
     private boolean status_showalways;
-    // 播放器在显示弹幕布局前的状态
-    private boolean status_isPlaying;
     private PolyvSensorHelper sensorHelper;
 
     //用于处理控制栏的显示状态
@@ -150,6 +149,9 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     };
     private ImageView iv_houtui;
     private int position;
+    public RelativeLayout relativeLayout;
+    private ImageView iv_liebiao;
+
 
     // 更新显示的播放进度，以及暂停/播放按钮
     private void showProgress() {
@@ -219,7 +221,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     }
 
 
-
     /**
      * 初始化控制栏的配置
      *
@@ -231,11 +232,13 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
 
 
     private void findIdAndNew() {
+        relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
         lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
         volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
         loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
         auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
 
+        iv_liebiao = (ImageView) findViewById(R.id.iv_liebiao);
         iv_houtui = (ImageView) findViewById(R.id.iv_houtui);
         //竖屏的view
         rl_port = (RelativeLayout) view.findViewById(R.id.rl_port);
@@ -294,22 +297,21 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         sensorHelper = new PolyvSensorHelper(videoActivity);
     }
 
-    public void setViewLightValue(int i,boolean b) {
-        lightView.setViewLightValue(i,b);
-    }
-    public void setLightHide(){
-        lightView.hide();
-    }
-    public void setViewVolumeValue(int i,boolean b) {
-        volumeView.setViewVolumeValue(i,b);
-    }
-    public void setVolumeHide(){
-        volumeView.hide();
+    public void setViewLightValue(int i, boolean b) {
+        lightView.setViewLightValue(i, b);
     }
 
-//    public void setProgressViewHide(){
-//        progressView.hide();
-//    }
+    public void setLightHide() {
+        lightView.hide();
+    }
+
+    public void setViewVolumeValue(int i, boolean b) {
+        volumeView.setViewVolumeValue(i, b);
+    }
+
+    public void setVolumeHide() {
+        volumeView.hide();
+    }
 
     public void clearGestureInfo() {
         videoView.clearGestureInfo();
@@ -317,6 +319,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         setVolumeHide();
         setLightHide();
     }
+
     /**
      * 播放模式
      *
@@ -367,7 +370,7 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         iv_play_land.setOnClickListener(this);
         iv_finish.setOnClickListener(this);
         //打开列表的点击事件
-        //iv_liebiao.setOnClickListener(this);
+        iv_liebiao.setOnClickListener(this);
         tv_full.setOnClickListener(this);
         tv_fit.setOnClickListener(this);
         tv_sixteennine.setOnClickListener(this);
@@ -564,12 +567,10 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         if (videoView != null) {
             if (videoView.isPlaying()) {
                 videoView.pause();
-                status_isPlaying = false;
                 iv_play.setSelected(true);
                 iv_play_land.setSelected(true);
             } else {
                 videoView.start();
-                status_isPlaying = true;
                 iv_play.setSelected(false);
                 iv_play_land.setSelected(false);
             }
@@ -668,41 +669,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         rl_center_set.setVisibility(isVisible);
     }
 
-   /* //重置弹幕布局的显示状态
-    private void resetDanmuLayout(int isVisible) {
-        if (isVisible == View.VISIBLE) {
-            show(-1);
-            resetTopBottomLayout(View.GONE);
-            resetSideLayout(View.GONE);
-            resetBitRateLayout(View.GONE, false);
-            resetSpeedLayout(View.GONE, false);
-            et_dmedit.requestFocus();
-            et_dmedit.setText("");
-            if (videoView != null) {
-                status_isPlaying = videoView.isPlaying();
-                videoView.pause(true);
-            }
-        } else if (rl_center_danmu.getVisibility() == View.VISIBLE) {
-            if (videoView != null && status_isPlaying) {
-                videoView.start();
-            }
-        }
-        iv_dmset.setSelected(false);
-        rl_dmbot.setVisibility(View.GONE);
-        rl_center_danmu.setVisibility(isVisible);
-    }
-*/
-
-   /* //重置分享布局的显示状态
-    private void resetShareLayout(int isVisible) {
-        if (isVisible == View.VISIBLE) {
-            show(-1);
-            resetTopBottomLayout(View.GONE);
-            resetSideLayout(View.GONE);
-        }
-        rl_center_share.setVisibility(isVisible);
-    }
-*/
     //重置选择播放器银幕比率控件的状态
     private void resetRatioView(int screenRatio) {
         initRatioView(screenRatio);
@@ -731,7 +697,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
                 break;
         }
     }
-
 
 
     //重置选择字幕的控件
@@ -971,6 +936,9 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.iv_liebiao:
+                Toast.makeText(mContext, "点击打开视频列表", Toast.LENGTH_SHORT).show();
+                break;
             case R.id.iv_land:
                 changeToLandscape();
                 break;
