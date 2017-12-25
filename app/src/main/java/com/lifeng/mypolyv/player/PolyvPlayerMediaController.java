@@ -576,41 +576,6 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
         rl_center_set.setVisibility(isVisible);
     }
 
-   /* //重置弹幕布局的显示状态
-    private void resetDanmuLayout(int isVisible) {
-        if (isVisible == View.VISIBLE) {
-            show(-1);
-            resetTopBottomLayout(View.GONE);
-            resetSideLayout(View.GONE);
-            resetBitRateLayout(View.GONE, false);
-            resetSpeedLayout(View.GONE, false);
-            et_dmedit.requestFocus();
-            et_dmedit.setText("");
-            if (videoView != null) {
-                status_isPlaying = videoView.isPlaying();
-                videoView.pause(true);
-            }
-        } else if (rl_center_danmu.getVisibility() == View.VISIBLE) {
-            if (videoView != null && status_isPlaying) {
-                videoView.start();
-            }
-        }
-        iv_dmset.setSelected(false);
-        rl_dmbot.setVisibility(View.GONE);
-        rl_center_danmu.setVisibility(isVisible);
-    }
-*/
-
-    /* //重置分享布局的显示状态
-     private void resetShareLayout(int isVisible) {
-         if (isVisible == View.VISIBLE) {
-             show(-1);
-             resetTopBottomLayout(View.GONE);
-             resetSideLayout(View.GONE);
-         }
-         rl_center_share.setVisibility(isVisible);
-     }
- */
     //重置选择播放器银幕比率控件的状态
     private void resetRatioView(int screenRatio) {
         initRatioView(screenRatio);
