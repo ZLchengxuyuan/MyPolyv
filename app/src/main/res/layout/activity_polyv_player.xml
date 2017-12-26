@@ -10,10 +10,10 @@
         android:layout_height="@dimen/top_center_player_height"
         android:background="@color/top_text_color_black">
 
-        <com.easefun.polyvsdk.video.PolyvVideoView
-            android:id="@+id/polyv_video_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <!--<com.easefun.polyvsdk.video.PolyvVideoView-->
+            <!--android:id="@+id/polyv_video_view"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent" />-->
 
         <com.lifeng.mypolyv.player.PolyvPlayerVideoViewController
             android:id="@+id/polyv_player_video_view_controller"
@@ -26,11 +26,6 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <!-- vlms cover -->
-        <ImageView
-            android:id="@+id/iv_vlms_cover"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY" />
+
     </RelativeLayout>
 </LinearLayout>

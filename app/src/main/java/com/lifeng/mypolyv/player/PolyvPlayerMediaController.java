@@ -130,6 +130,14 @@ public class PolyvPlayerMediaController extends PolyvBaseMediaController impleme
     private ImageView iv_houtui;
     private int position;
     private ImageView iv_liebiao;
+    private static PolyvPlayerMediaController instance;
+
+    public static PolyvPlayerMediaController getInstance(Context context) {
+        if (instance == null) {
+            instance = new PolyvPlayerMediaController(context);
+        }
+        return instance;
+    }
 
     // 更新显示的播放进度，以及暂停/播放按钮
     private void showProgress() {

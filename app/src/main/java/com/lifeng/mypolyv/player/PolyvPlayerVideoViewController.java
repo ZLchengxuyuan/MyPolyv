@@ -4,10 +4,12 @@ import android.content.Context;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.easefun.polyvsdk.video.PolyvVideoView;
@@ -19,10 +21,11 @@ import com.lifeng.mypolyv.R;
  */
 
 public class PolyvPlayerVideoViewController extends FrameLayout {
+    private ImageView iv_vlms_cover;
     /**
      * 播放主视频播放器
      */
-    private PolyvVideoView videoView = null;
+    public PolyvVideoView videoView = null;
     /**
      * 视频广告，视频片头加载缓冲视图
      */
@@ -48,26 +51,27 @@ public class PolyvPlayerVideoViewController extends FrameLayout {
      */
     public PolyvPlayerVolumeView volumeView = null;
     private View view;
+    private PolyvPlayerMediaController mediaController;
 
     public PolyvPlayerVideoViewController(@NonNull Context context) {
         super(context);
         this.view = LayoutInflater.from(context).inflate(R.layout.polyv_controller_video_view, this);
-        findIdAndNew();
+        findIdAndNew(context);
     }
 
     public PolyvPlayerVideoViewController(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.view = LayoutInflater.from(context).inflate(R.layout.polyv_controller_video_view, this);
-        findIdAndNew();
+        findIdAndNew(context);
     }
 
     public PolyvPlayerVideoViewController(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.view = LayoutInflater.from(context).inflate(R.layout.polyv_controller_video_view, this);
-        findIdAndNew();
+        findIdAndNew(context);
     }
 
-    private void findIdAndNew() {
+    private void findIdAndNew(Context context) {
         videoView = (PolyvVideoView) findViewById(R.id.polyv_video_view);
         lightView = (PolyvPlayerLightView) findViewById(R.id.polyv_player_light_view);
         volumeView = (PolyvPlayerVolumeView) findViewById(R.id.polyv_player_volume_view);
@@ -75,6 +79,29 @@ public class PolyvPlayerVideoViewController extends FrameLayout {
         loadingProgress = (ProgressBar) findViewById(R.id.loading_progress);
         auxiliaryVideoView = (PolyvAuxiliaryVideoView) findViewById(R.id.polyv_auxiliary_video_view);
         auxiliaryLoadingProgress = (ProgressBar) findViewById(R.id.auxiliary_loading_progress);
+        mediaController = PolyvPlayerMediaController.getInstance(context);
+
+    }
+    /**
+     * 播放视频
+     *
+     * @param vid               视频id
+     * @param //bitrate         码率（清晰度）
+     * @param //startNow        是否现在开始播放视频
+     * @param //isMustFromLocal 是否必须从本地（本地缓存的视频）播放
+     */
+    public void play(final String vid) {
+        if (TextUtils.isEmpty(vid)) return;
+        if (iv_vlms_cover != null && iv_vlms_cover.getVisibility() == View.VISIBLE)
+            iv_vlms_cover.setVisibility(View.GONE);
+
+        videoView.release();
+        mediaController.hide();
+        loadingProgress.setVisibility(View.GONE);
+        auxiliaryVideoView.hide();
+        auxiliaryLoadingProgress.setVisibility(View.GONE);
+        //调用setVid方法视频会自动播放
+        videoView.setVid(vid);
 
     }
 
